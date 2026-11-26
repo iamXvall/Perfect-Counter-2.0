@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Perfect Counter by Xvall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display&family=Fredoka:wght@500&family=JetBrains+Mono:wght@600&family=Orbitron:wght@600&family=Pacifico&family=Press+Start+2P&family=Space+Grotesk:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0f1a;--fg:#f2f5ff;--ac:#5b8cff;--font:'Space Grotesk',system-ui,sans-serif;--scale:1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;overflow:hidden}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{height:100%;display:flex;flex-direction:column}
+#stage{flex:1;display:flex;align-items:center;gap:.4rem;padding:0 1rem;min-height:0}
+#tap{flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;outline:none;min-height:0}
+#num{font-size:calc(min(24vw,38vh,15rem)*var(--scale));line-height:1;font-variant-numeric:tabular-nums;text-align:center;word-break:break-all;padding:0 1rem}
+#lim{margin-top:.6rem;font-size:1.1rem;opacity:.65;min-height:1.5rem}
+#bar{display:flex;gap:1rem;justify-content:center;padding:.5rem 1rem 1.2rem}
+.rb{flex:none;width:clamp(3rem,13vmin,4.5rem);height:clamp(3rem,13vmin,4.5rem);border-radius:50%;border:2px solid var(--ac);background:transparent;display:grid;place-items:center;font-size:1.7rem;line-height:1;transition:transform .1s}
+.rb:active{transform:scale(.92)}
+#bar .rb{width:3.2rem;height:3.2rem;font-size:1.5rem}
+.rb svg{width:1.6rem;height:1.6rem}
+:focus-visible{outline:3px solid var(--ac);outline-offset:3px}
+
+#intro{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;cursor:pointer;transition:opacity .6s}
+#intro.out{opacity:0;pointer-events:none}
+#intro h1{margin:0;font-weight:inherit;font-size:clamp(2.2rem,11vw,5rem);line-height:1.05;animation:rise 1s cubic-bezier(.2,.7,.2,1) both}
+#intro p{margin:1rem 0 0;font-size:clamp(1.1rem,4vw,1.6rem);color:var(--ac);animation:rise 1s .7s cubic-bezier(.2,.7,.2,1) both}
+#intro small{position:absolute;bottom:calc(2rem + env(safe-area-inset-bottom,0px));opacity:0;font-size:.85rem;animation:fade 1s 1.6s forwards;font-family:system-ui,sans-serif}
+@keyframes rise{from{opacity:0;letter-spacing:.35em;filter:blur(6px)}to{opacity:1;letter-spacing:0;filter:blur(0)}}
+@keyframes fade{to{opacity:.55}}
+
+#ov{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
+#ov.open{display:flex}
+#sheet{width:100%;max-width:34rem;max-height:88%;overflow-y:auto;background:var(--bg);color:var(--fg);border:2px solid var(--ac);border-bottom:0;border-radius:1.4rem 1.4rem 0 0;padding:1.2rem 1.3rem calc(1.4rem + env(safe-area-inset-bottom,0px));font-family:system-ui,sans-serif;-webkit-user-select:auto;user-select:auto}
+#sheet h2{margin:0 0 1rem;font-size:1.2rem;display:flex;justify-content:space-between;align-items:center}
+#sheet h3{margin:1.3rem 0 .6rem;font-size:.95rem;opacity:.75;font-weight:600}
+.x{border:0;background:none;font-size:1.6rem;line-height:1;padding:.2rem .5rem}
+.row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.row label{flex:1;min-width:7rem}
+input[type=number]{width:100%;font:inherit;font-size:1.05rem;padding:.55rem .7rem;border-radius:.6rem;border:2px solid var(--ac);background:transparent;color:var(--fg)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.chip{border:2px solid color-mix(in srgb,var(--fg) 30%,transparent);background:transparent;border-radius:.7rem;padding:.5rem .8rem;font-size:1.05rem}
+.chip.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 22%,transparent)}
+.sw{width:3.2rem;height:3.2rem;border-radius:50%;border:3px solid transparent;padding:0;position:relative;overflow:hidden}
+.sw.on{border-color:var(--ac);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ac)}
+.sw i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:1.1rem}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.cols label{display:flex;flex-direction:column;gap:.35rem;font-size:.85rem;align-items:flex-start}
+input[type=color]{width:100%;height:2.8rem;border:2px solid color-mix(in srgb,var(--fg) 30%,transparent);border-radius:.6rem;background:none;padding:2px;cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.tg{display:flex;justify-content:space-between;align-items:center;margin-top:1.1rem}
+.tg input{width:1.4rem;height:1.4rem;accent-color:var(--ac)}
+.btn{border:2px solid var(--ac);background:var(--ac);color:var(--bg);border-radius:.7rem;padding:.65rem 1.1rem;font-size:1rem;font-weight:600}
+.btn.o{background:transparent;color:var(--fg)}
+#dlg{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);display:none;place-items:center;padding:1.5rem}
+#dlg.open{display:grid}
+#dlg div{background:var(--bg);color:var(--fg);border:2px solid var(--ac);border-radius:1.1rem;padding:1.4rem;max-width:20rem;width:100%;text-align:center;font-family:system-ui,sans-serif}
+#dlg p{margin:0 0 1.2rem;font-size:1.1rem}
+#dlg .row{justify-content:center}
+@media (prefers-reduced-motion:reduce){#intro h1,#intro p{animation:none}#intro small{animation:none;opacity:.55}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <button class="rb" id="minus" aria-label="Kurangi">−</button>
+    <main id="tap" tabindex="0" aria-label="Ketuk untuk menambah hitungan">
+      <div id="num" aria-live="polite">0</div>
+      <div id="lim"></div>
+    </main>
+    <button class="rb" id="plus" aria-label="Tambah">+</button>
+  </div>
+  <nav id="bar">
+    <button class="rb" id="rst" aria-label="Reset">↺</button>
+    <button class="rb" id="set" aria-label="Pengaturan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </nav>
+</div>
+
+<div id="intro" role="button" aria-label="Mulai">
+  <h1>Perfect Counter</h1>
+  <p>by Xvall</p>
+  <small>Ketuk untuk mulai</small>
+</div>
+
+<div id="ov"><div id="sheet" role="dialog" aria-label="Pengaturan">
+  <h2>Pengaturan <button class="x" id="close" aria-label="Tutup">×</button></h2>
+  <div class="row">
+    <label>Atur hitungan<input type="number" id="cnt" inputmode="numeric"></label>
+    <label>Batas (0 = tanpa batas)<input type="number" id="lmt" min="0" inputmode="numeric"></label>
+  </div>
+  <h3>Font</h3><div class="chips" id="fonts"></div>
+  <h3>Ukuran angka</h3><input type="range" id="size" min="40" max="110" step="5">
+  <h3>Tema</h3><div class="chips" id="themes"></div>
+  <h3>Warna sendiri</h3>
+  <div class="cols">
+    <label>Latar<input type="color" id="cbg"></label>
+    <label>Angka<input type="color" id="cfg"></label>
+    <label>Tombol<input type="color" id="cac"></label>
+  </div>
+  <div class="tg"><span>Getar saat mengetuk</span><input type="checkbox" id="hap"></div>
+</div></div>
+
+<div id="dlg"><div>
+  <p>Reset hitungan ke 0?</p>
+  <div class="row"><button class="btn" id="yes">Ya, reset</button><button class="btn o" id="no">Batal</button></div>
+</div></div>
+
+<script>
+(function(){
+var FONTS=[
+ ['Space Grotesk',"'Space Grotesk',system-ui,sans-serif"],
+ ['Orbitron',"'Orbitron',system-ui,sans-serif"],
+ ['Bebas Neue',"'Bebas Neue',Impact,sans-serif"],
+ ['DM Serif Display',"'DM Serif Display',Georgia,serif"],
+ ['Press Start 2P',"'Press Start 2P',ui-monospace,monospace"],
+ ['JetBrains Mono',"'JetBrains Mono',ui-monospace,monospace"],
+ ['Fredoka',"'Fredoka',system-ui,sans-serif"],
+ ['Pacifico',"'Pacifico',cursive"]
+];
+var THEMES=[
+ ['Midnight','#0b0f1a','#f2f5ff','#5b8cff'],
+ ['Salju','#f4f6f8','#14181f','#2563eb'],
+ ['Laut','#06202b','#e3f6ff','#22d3ee'],
+ ['Senja','#2a0f1f','#ffe9d6','#ff7a45'],
+ ['Hutan','#0f2318','#e6f5e9','#4ade80'],
+ ['Neon','#000000','#39ff14','#ff00e5'],
+ ['Mawar','#fdeef2','#4a1424','#e11d48'],
+ ['Kopi','#241a14','#f3e6d8','#d9a066']
+];
+var S={count:0,limit:0,font:0,size:100,bg:THEMES[0][1],fg:THEMES[0][2],ac:THEMES[0][3],hap:true};
+try{var raw=localStorage.getItem('perfect-counter');if(raw){var o=JSON.parse(raw);for(var k in o)if(k in S)S[k]=o[k];}}catch(e){}
+function save(){try{localStorage.setItem('perfect-counter',JSON.stringify(S));}catch(e){}}
+var $=function(id){return document.getElementById(id)};
+var num=$('num'),lim=$('lim'),root=document.documentElement;
+
+function buzz(n){if(S.hap&&navigator.vibrate){try{navigator.vibrate(n)}catch(e){}}}
+function render(bump){
+  root.style.setProperty('--bg',S.bg);root.style.setProperty('--fg',S.fg);root.style.setProperty('--ac',S.ac);
+  root.style.setProperty('--font',FONTS[S.font][1]);root.style.setProperty('--scale',S.size/100);
+  document.querySelector('meta[name=theme-color]')||document.head.insertAdjacentHTML('beforeend','<meta name="theme-color">');
+  document.querySelector('meta[name=theme-color]').content=S.bg;
+  num.textContent=S.count;
+  lim.textContent=S.limit>0?(S.count>=S.limit?'Batas '+S.limit+' tercapai':'dari '+S.limit):'';
+  if(bump&&num.animate)num.animate([{transform:'scale(1.07)'},{transform:'scale(1)'}],{duration:130});
+  document.querySelectorAll('#fonts .chip').forEach(function(c,i){c.classList.toggle('on',i===S.font)});
+  document.querySelectorAll('#themes .sw').forEach(function(c,i){var t=THEMES[i];c.classList.toggle('on',t[1]===S.bg&&t[2]===S.fg&&t[3]===S.ac)});
+}
+function inc(){
+  if(S.limit>0&&S.count>=S.limit){buzz([40,40,40]);return;}
+  S.count++;buzz(12);save();render(true);
+  if(S.limit>0&&S.count>=S.limit)buzz([60,40,60]);
+}
+function dec(){S.count--;buzz(8);save();render(true);}
+
+$('tap').addEventListener('click',inc);
+$('plus').addEventListener('click',inc);
+$('minus').addEventListener('click',dec);
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT')return;
+  if(e.key===' '||e.key==='Enter'||e.key==='ArrowUp'){if(e.target.tagName==='BUTTON')return;e.preventDefault();inc();}
+  else if(e.key==='ArrowDown'||e.key==='-'){e.preventDefault();dec();}
+});
+
+// Pengaturan
+var fw=$('fonts');
+FONTS.forEach(function(f,i){var b=document.createElement('button');b.className='chip';b.textContent=f[0];b.style.fontFamily=f[1];b.onclick=function(){S.font=i;save();render();};fw.appendChild(b);});
+var tw=$('themes');
+THEMES.forEach(function(t,i){var b=document.createElement('button');b.className='sw';b.title=t[0];b.setAttribute('aria-label','Tema '+t[0]);b.style.background=t[1];b.innerHTML='<i style="color:'+t[2]+'">1</i>';b.style.outline='0';
+  b.onclick=function(){S.bg=t[1];S.fg=t[2];S.ac=t[3];syncInputs();save();render();};tw.appendChild(b);});
+function syncInputs(){$('cbg').value=S.bg;$('cfg').value=S.fg;$('cac').value=S.ac;$('cnt').value=S.count;$('lmt').value=S.limit;$('size').value=S.size;$('hap').checked=S.hap;}
+['cbg:bg','cfg:fg','cac:ac'].forEach(function(p){var a=p.split(':');$(a[0]).oninput=function(){S[a[1]]=this.value;save();render();};});
+$('size').oninput=function(){S.size=+this.value;save();render();};
+$('hap').onchange=function(){S.hap=this.checked;save();};
+$('cnt').onchange=function(){var v=parseInt(this.value,10);S.count=isNaN(v)?0:v;save();render();};
+$('lmt').onchange=function(){var v=parseInt(this.value,10);S.limit=isNaN(v)||v<0?0:v;save();render();};
+function openSet(){syncInputs();$('ov').classList.add('open');}
+function closeSet(){$('ov').classList.remove('open');}
+$('set').onclick=openSet;$('close').onclick=closeSet;
+$('ov').addEventListener('click',function(e){if(e.target===this)closeSet();});
+
+// Reset
+$('rst').onclick=function(){$('dlg').classList.add('open');};
+$('no').onclick=function(){$('dlg').classList.remove('open');};
+$('yes').onclick=function(){S.count=0;save();render(true);$('dlg').classList.remove('open');};
+
+// Intro
+var intro=$('intro'),done=false;
+function endIntro(){if(done)return;done=true;intro.classList.add('out');setTimeout(function(){intro.style.display='none';},700);}
+intro.addEventListener('click',endIntro);
+setTimeout(endIntro,3200);
+
+render();
+})();
+</script>
+</body>
+</html>
